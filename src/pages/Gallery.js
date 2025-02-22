@@ -11,10 +11,7 @@ const Gallery = () => {
   
   return (
     <div>
-      {/* Use Header component */}
-      <Header />
-      
-      {/* Add spacing below navbar */}
+
       <div style={{ marginTop: "100px" }}></div>
 
       {/* Gallery Section */}

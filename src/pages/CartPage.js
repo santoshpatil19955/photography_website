@@ -1,48 +1,72 @@
-import React from 'react';
+import React from "react";
+import { useCart } from "../context/CartContext";
+import emptyImage from "../assets/empty.webp"; // Import the image
 
-const Cart = () => {
-  const cartItems = [
-    { id: 1, name: "Photo Print - Sunset", price: 25 },
-    { id: 2, name: "Canvas Print - Mountains", price: 50 },
-    { id: 3, name: "Digital Download - Cityscape", price: 15 }
-  ];
+const CartPage = () => {
+  const { cartItems, addToCart, removeFromCart } = useCart();
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price, 0);
+  const grandTotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) return;
+
+    const services = cartItems.map((item) => item.name).join("\n");
+
+    // Prepare WhatsApp message
+    const message = encodeURIComponent(
+      `I am Interested in:\n${services}\n\nGrand Total: Rs.${grandTotal.toFixed(2)}`
+    );
+
+    window.open(`https://wa.me/917757984048?text=${message}`, "_blank");
+  };
+
+  const handleRemoveItem = (id) => {
+    const item = cartItems.find((item) => item.id === id);
+    if (item.quantity > 1) {
+      // If quantity > 1, just reduce the quantity by 1
+      removeFromCart(id, item.quantity - 1);
+    } else {
+      // If quantity is 1, remove the item completely
+      removeFromCart(id);
+    }
+  };
 
   return (
-    <div className="content-body">
-      <section className="cart-container">
-        <div className="cart-content">
-          <h2 className="cart-title">Your Cart</h2>
+    <div className="cart-page">
+      <br /><br /><br /><br />
 
-          <div className="cart-table-sec">
-            <table className="cart-table">
-              <thead>
-                <tr>
-                  <th>Item Name</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cartItems.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>${item.price.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="cart-total">
-            <h3>Total: <span>${totalPrice.toFixed(2)}</span></h3>
-          </div>
-
-          <button className="checkout-btn">Checkout</button>
+      {cartItems.length === 0 ? (
+        <div className="empty-cart">
+          <img src={emptyImage} alt="Empty Cart" />
+          <p>Your cart is empty :(</p>
         </div>
-      </section>
+      ) : (
+        <>
+          <div className="cart-items">
+            {cartItems.map((item) => (
+              <div key={item.id} className="cart-item">
+                <img src={item.image} alt={item.name} />
+                <h3>{item.name}</h3>
+                <p>{item.quantity} x Rs.{item.price}</p>
+                <button onClick={() => handleRemoveItem(item.id)}>-</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => addToCart(item)}>+</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Grand Total */}
+          <div className="cart-summary">
+            <h3>Grand Total: Rs.{grandTotal.toFixed(2)}</h3>
+
+            <button className="checkout-btn" onClick={handleCheckout} disabled={cartItems.length === 0}>
+              Proceed to Checkout
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
 
-export default Cart;
+export default CartPage;
